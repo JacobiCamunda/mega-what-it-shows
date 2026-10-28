@@ -15,19 +15,23 @@ signature: v1.eyJzdWIiOiIzMDc5IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYX
 
   const repo = 'https://github.com/JacobiCamunda/mega-what-it-shows/issues';
   const tickets = {
-    parser: { href: `${repo}/1`, label: 'parser · #1' },
-    hint: { href: `${repo}/2`, label: 'hint · #2' },
-    'one-day': { href: `${repo}/3`, label: 'one-day · #3' },
+    parser: { href: `${repo}/1`, label: 'parser · #1 · closed, fixed' },
+    hint: { href: `${repo}/2`, label: 'hint · #2 · closed, won\'t fix' },
+    'one-day': { href: `${repo}/3`, label: 'one-day · #3 · open' },
   };
 </script>
 
-[#4471](/kb/incidents/4471) is marked known: one bug, one fix queued. The reports merged into it
-do not say that. The desk merged them by subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
+[#4471](/kb/incidents/4471) was marked known: one bug, one fix. The reports merged into it do not
+say that. The desk merged them by subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
 and a subject like "Date is wrong" fits more than one bug. Read by what each report shows, #4471
 holds more than one problem. Each problem now has a ticket of its own.
 
+Engineering closed #4471 on 5 October: `parser` is fixed (`fix(dates): parse dd/mm for eu
+locales`), and `hint` won't be fixed because the `booking-v3` form is retired.
+
 <Callout kind="warn">
-The fix queued for #4471 fixes the shared parser only. The other problems stay open after it ships.
+Closing #4471 does not close <code>one-day</code>. Neither the parser fix nor retiring booking-v3 touches a
+date that moves by one day. Keep its ticket open.
 </Callout>
 
 ## The problems
@@ -36,13 +40,14 @@ The fix queued for #4471 fixes the shared parser only. The other problems stay o
 
 How a report is placed, in this order (`src/lib/kb/problems.ts`):
 
-1. **`one-day`**: the desk read it as a one-day move (`desk-notes.json`). Its dates are not flipped:
-   the booking lands one day early, or before it was made, or on a different day per time zone.
-2. **`hint`**: it came in through the booking form of a tenant on `booking-v3`. That form prints
+1. **`hint`**: it came in through the booking form of a tenant on `booking-v3`. That form prints
    `MM/DD/YYYY` under the date field, so people type the month first, and the form reads it the
    tenant's way, day first. The parser fix does not touch this.
-3. **`parser`**: every other report from a day-first tenant. The shared parser reads the date
-   month first, so day and month swap.
+2. **`parser`**: every other report from a day-first tenant. The shared parser read the date
+   month first, so day and month swapped.
+3. **`one-day`**: the desk read it as a one-day move (`desk-notes.json`). Its dates are not flipped:
+   the booking lands one day early, or before it was made, or on a different day per time zone.
+   The desk's own view counts these under `parser`; so does this table, and it lists them again here.
 
 The tenant decides the problem, not intake's tag. Intake guesses from the reporter's browser, and
 a reporter at a day-first tenant often has an `en-US` or `en-GB` browser.
@@ -55,10 +60,10 @@ These show no swapped day and month. They look like a time zone bug, not a date 
 
 ## What the desk should do
 
-- Keep #4471's fix for `parser`. Do not close the other tickets when it ships.
-- Fix the hint on `booking-v3` so it matches the tenant's date order, or make the form read what
-  the hint asks for.
-- Look at time zones for `one-day`: invites built for one zone and sent to another.
+- `parser`: closed, fixed with #4471.
+- `hint`: closed, won't fix. The `booking-v3` form is retired.
+- `one-day`: open. Look at time zones: invites built for one zone and sent to another. A new
+  one-day report after 5 October belongs here, not in #4471.
 - Before you merge a report into a big ticket, read its body. A shared subject line is not a
   shared cause.
 

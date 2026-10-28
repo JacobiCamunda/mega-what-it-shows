@@ -44,6 +44,14 @@
   </tbody>
 </table>
 
+{#if split.oneDayFiledAs.length}
+  {@const oneDay = split.groups.find((g) => g.problem === 'one-day')}
+  <p class="small">
+    The {oneDay?.reports.length} <code>one-day</code> reports are also counted under
+    {#each split.oneDayFiledAs as p, i (p)}{i ? ', ' : ''}<code>{p}</code>{/each}, where the desk files them by tenant.
+  </p>
+{/if}
+
 <style>
   .sum { font-size: 1.1rem; }
   .small { color: var(--muted); font-size: 0.85em; }
