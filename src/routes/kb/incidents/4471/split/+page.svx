@@ -1,0 +1,65 @@
+---
+layout: runbook
+title: '#4471 · what the reports show'
+owner: support desk
+status: accepted
+reviewed: 2026-10-28
+signature: v1.eyJzdWIiOiIzMDc5IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMxODIxMDAsImV4cCI6MTc5MzI2ODUwMH0.gTZZnYuFhJYik0t2mh_9ebe9K-H9Aw2AyUgZnjFIjzc
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import ProblemReports from '#lib/kb/ProblemReports.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/JacobiCamunda/mega-what-it-shows/issues';
+  const tickets = {
+    parser: { href: `${repo}/1`, label: 'parser · #1' },
+    hint: { href: `${repo}/2`, label: 'hint · #2' },
+    'one-day': { href: `${repo}/3`, label: 'one-day · #3' },
+  };
+</script>
+
+[#4471](/kb/incidents/4471) is marked known: one bug, one fix queued. The reports merged into it
+do not say that. The desk merged them by subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
+and a subject like "Date is wrong" fits more than one bug. Read by what each report shows, #4471
+holds more than one problem. Each problem now has a ticket of its own.
+
+<Callout kind="warn">
+The fix queued for #4471 fixes the shared parser only. The other problems stay open after it ships.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} {tickets} />
+
+How a report is placed, in this order (`src/lib/kb/problems.ts`):
+
+1. **`one-day`**: the desk read it as a one-day move (`desk-notes.json`). Its dates are not flipped:
+   the booking lands one day early, or before it was made, or on a different day per time zone.
+2. **`hint`**: it came in through the booking form of a tenant on `booking-v3`. That form prints
+   `MM/DD/YYYY` under the date field, so people type the month first, and the form reads it the
+   tenant's way, day first. The parser fix does not touch this.
+3. **`parser`**: every other report from a day-first tenant. The shared parser reads the date
+   month first, so day and month swap.
+
+The tenant decides the problem, not intake's tag. Intake guesses from the reporter's browser, and
+a reporter at a day-first tenant often has an `en-US` or `en-GB` browser.
+
+## The one-day reports
+
+These show no swapped day and month. They look like a time zone bug, not a date format bug.
+
+<ProblemReports ticket={4471} problem="one-day" />
+
+## What the desk should do
+
+- Keep #4471's fix for `parser`. Do not close the other tickets when it ships.
+- Fix the hint on `booking-v3` so it matches the tenant's date order, or make the form read what
+  the hint asks for.
+- Look at time zones for `one-day`: invites built for one zone and sent to another.
+- Before you merge a report into a big ticket, read its body. A shared subject line is not a
+  shared cause.
+
+<RenderStamp {signature} />
